@@ -28,7 +28,7 @@ class ScriptController {
       .pipe(
         mergeMap(id => {
           let query$ =
-            sql`INSERT INTO scripts(id, content)
+            sql`INSERT INTO script(id, content)
                 VALUES ('${id}', '${content}')`;
           return from(query$)
             .pipe(
@@ -46,7 +46,7 @@ class ScriptController {
     type Row = Pick<Script, 'content'>;
     let query$ =
       sql<Row>`SELECT content
-               FROM scripts
+               FROM script
                WHERE id = '${scriptId}'`;
     return from(query$)
       .pipe(
@@ -72,7 +72,7 @@ class ScriptController {
     const generatedId = this.idGenerator.generateRandomId();
     let query$ =
       from(sql`SELECT id
-               from scripts
+               from script
                where id = ${generatedId}`);
     return query$
       .pipe(
