@@ -29,7 +29,7 @@ class ScriptController {
         mergeMap(id => {
           let query$ =
             sql`INSERT INTO script(id, content)
-                VALUES ('${id}', '${content}')`;
+                VALUES (${id}, ${content})`;
           return from(query$)
             .pipe(
               map(() => {
@@ -47,7 +47,7 @@ class ScriptController {
     let query$ =
       sql<Row>`SELECT content
                FROM script
-               WHERE id = '${scriptId}'`;
+               WHERE id = ${scriptId}`;
     return from(query$)
       .pipe(
         map(result => {
