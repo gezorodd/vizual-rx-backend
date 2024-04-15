@@ -11,6 +11,7 @@ class ScriptController {
   }
 
   handle(req: VercelRequest, res: VercelResponse): Observable<VercelResponse> {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200')
     switch (req.method) {
       case 'POST':
         return controller.createScript(req, res);
