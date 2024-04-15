@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/scripts/:scriptId",
+      "destination": "/api/scripts"
+    }
+  ]
+}
