@@ -15,7 +15,7 @@ class ScriptController {
       case 'POST':
         return controller.createScript(req, res);
       case 'GET':
-        return of(controller.getScript(req, res));
+        return controller.getScript(req, res);
       default:
         return of(res.status(405)
           .send('405 - Method Not Allowed'));
@@ -23,37 +23,61 @@ class ScriptController {
   }
 
   private createScript(req: VercelRequest, res: VercelResponse): Observable<VercelResponse> {
-    // this.getNewScriptId()
-    //   .pipe(
-    //
-    //   )
-
     const content = req.body;
-    return of(res.json({
-      id: '123456',
-      content
-    }));
+    return this.getNewScriptId()
+      .pipe(
+        mergeMap(id => {
+          let query$ =
+            sql`INSERT INTO scripts(id, content)
+                VALUES ('${id}', '${content}')`;
+          return from(query$)
+            .pipe(
+              map(() => {
+                res.send(id);
+                return res;
+              })
+            )
+        })
+      );
   }
 
-  private getScript(req: VercelRequest, res: VercelResponse): VercelResponse {
-    const {scriptId} = req.query;
-    return res.json({
-      id: scriptId,
-      content: 'test'
-    });
+  private getScript(req: VercelRequest, res: VercelResponse): Observable<VercelResponse> {
+    const scriptId = req.query.scriptId as string;
+    type Row = Pick<Script, 'content'>;
+    let query$ =
+      sql<Row>`SELECT content
+               FROM scripts
+               WHERE id = '${scriptId}'`;
+    return from(query$)
+      .pipe(
+        map(result => {
+          const rows = result.rows;
+          if (rows.length > 0) {
+            const row = rows[0];
+            const script: Script = {
+              id: scriptId,
+              content: row.content
+            };
+            res.json(script);
+          } else {
+            res.status(404)
+              .send(`Script not found for id ${scriptId}`);
+          }
+          return res;
+        })
+      );
   }
 
   private getNewScriptId(): Observable<string> {
     const generatedId = this.idGenerator.generateRandomId();
-    let result$ =
+    let query$ =
       from(sql`SELECT id
                from scripts
                where id = ${generatedId}`);
-    return result$
+    return query$
       .pipe(
-        map(result => result.rows),
-        mergeMap(rows => {
-          const isCollision = rows.length > 0;
+        mergeMap(result => {
+          const isCollision = result.rowCount !== 0;
           if (isCollision) {
             return this.getNewScriptId();
           } else {
@@ -91,6 +115,11 @@ class IdGenerator {
     }
     return builder;
   }
+}
+
+interface Script {
+  id: string;
+  content: string;
 }
 
 const controller = new ScriptController();
