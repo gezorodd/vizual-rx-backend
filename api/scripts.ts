@@ -5,13 +5,19 @@ import {firstValueFrom, from, map, mergeMap, Observable, of} from "rxjs";
 class ScriptController {
 
   private readonly idGenerator: IdGenerator;
+  private readonly corsWhitelist = [
+    'http://localhost:4200',
+    'https://vizual-rx.vercel.app/playground'
+  ];
 
   constructor() {
     this.idGenerator = new IdGenerator();
   }
 
   handle(req: VercelRequest, res: VercelResponse): Observable<VercelResponse> {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200')
+    if (this.corsWhitelist.includes(req.headers.origin)) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    }
     switch (req.method) {
       case 'POST':
         return controller.createScript(req, res);
