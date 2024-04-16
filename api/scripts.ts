@@ -7,7 +7,7 @@ class ScriptController {
   private readonly idGenerator: IdGenerator;
   private readonly corsWhitelist = [
     'http://localhost:4200',
-    'https://vizual-rx.vercel.app/playground'
+    'https://vizual-rx.vercel.app'
   ];
 
   constructor() {
